@@ -2,7 +2,9 @@ from django.db import models
 from accounts.models import Teacher
 
 # Create your models here.
+
 class Homework(models.Model):
+
     GRADE_CHOICES = (
         ('1',"1 класс"), ('2',"2 класс"),
         ('3', "3 класс"), ('4', "4 класс"),
@@ -23,7 +25,6 @@ class Homework(models.Model):
     subject = models.CharField(max_length=255)
     created = models.DateTimeField()
     duration = models.CharField(max_length=255, choices=DURATION_TIME)
-
     def __str__(self):
         return self.subject
     
