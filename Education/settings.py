@@ -87,7 +87,7 @@ DATABASES = {
         'PASSWORD':'limonlink',
         'HOST':'localhost',
         'PORT':5432,       
-    }
+    },
 }
 
 
