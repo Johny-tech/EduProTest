@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 import django_heroku
+import mongoengine
 from datetime import timedelta
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,6 +28,10 @@ SECRET_KEY = 'u4h+3#az(g2$ipot_^1+052ux%4ff1zl0%nkfwqkjp_g1i+p1_'
 DEBUG = True
 
 ALLOWED_HOSTS = []
+# - fix an App structure .Make it modular.
+# -add New Test functionality DRrestFramework (TestApp).(All functionalities:CRUD).
+# -Try Slowly turn code to DRF every app .
+# -try to add async functions to code in parts where asyncronous responses needed
 
 
 # Application definition
@@ -44,9 +49,16 @@ INSTALLED_APPS = [
     'schools.apps.SchoolsConfig',
     'student.apps.StudentConfig',
     'django_cleanup',
+    'corsheaders',
+    'testapp',
+    'mongoengine',
+    'rest_framework',
+    'django_mongoengine',
+    'rest_framework_mongoengine',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -74,11 +86,36 @@ TEMPLATES = [
     },
 ]
 
+# SITE_ID = 1
+# USE_I18N = True
+
+
 WSGI_APPLICATION = 'Education.wsgi.application'
 
+# MONGO_USER = 'admin'
+# MONGO_PASS = 'limonlinkrustam777'
+# MONGO_DATABASE_NAME = 'EDUPROTEST'
+# MONGO_HOST = 'mongodb://localhost:27017/EDUPROTEST'
 
+# mongoengine.connect(db=MONGO_DATABASE_NAME,host=MONGO_HOST)
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+MONGO_DATABASE_NAME = 'EDUPROTEST'
+SESSION_ENGINE = 'mongoengine.django.sessions'
+mongoengine.connect(name=MONGO_DATABASE_NAME, host='localhost:27017')
+AUTHENTICATION_BACKENDS = ('mongoengine.django.auth.MongoEngineBackend',)
+
+
+MONGODB_DATABASES = {
+    'testdb': {
+        'name': 'EDUPROTEST',
+        'host': 'mongodb://localhost:27017/EDUPROTEST',
+        'port':21017,
+        'tz_aware': True, # if you using timezones in django (USE_TZ = True)
+    }
+}
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -88,9 +125,21 @@ DATABASES = {
         'HOST':'localhost',
         'PORT':5432,       
     },
+    'testdb': {
+        'ENGINE':'djongo',
+        'name': 'EDUPROTEST',
+        'host': 'mongodb://localhost:27017/EDUPROTEST',
+        'port':21017,
+        'tz_aware': True, # if you using timezones in django (USE_TZ = True)
+    },
 }
 
+DATABASE_ROUTERS = ['dbrouters.routers.MongoDBRouter']
 
+
+
+SESSION_ENGINE = 'django_mongoengine.sessions'
+SESSION_SERIALIZER = 'django_mongoengine.sessions.BSONSerializer'
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -108,6 +157,12 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 1,
+}
 
 
 # Internationalization

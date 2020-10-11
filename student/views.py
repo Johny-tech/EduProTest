@@ -3,11 +3,14 @@ from accounts.models import School, Student, Test, Question, Teacher
 from .models import EnrolledTesting, DoneHomework, ImagesHomework
 from teacher.models import Homework
 from django.contrib import messages
+from rest_framework.response import Response
 from django.http import JsonResponse
+from rest_framework.generics import GenericAPIView
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate, logout
 from django.core.paginator import Paginator
 import datetime, pytz
+
 
 
 # Create your views here.
@@ -20,6 +23,7 @@ def student_main_page(request):
             pass
     else:
         return redirect('/student/student_registration/')
+
 
 
 def student_registration(request):
@@ -199,6 +203,34 @@ def enroll_student(request, test_id):
                 student.enrolledtesting_set.create(test_id=test_id, istaken=True, started=utc.localize(datetime.datetime.now()))
                 return redirect('/student/%s/solving_test/' % test_id)
 
+
+
+def get_test(request, test_id):
+    if request.user.is_authenticated:
+        if request.user.last_name == 'student':
+            if request.method == 'POST':
+                pass
+            elif request.method == 'GET':
+                test = Test.objects.get(id=test_id)
+                questions = test.question_set.all()
+                paginator = Paginator(questions, 1)
+                try:
+                    page = int(request.GET.get('page', '1'))
+                except:
+                    page = 1
+                try:
+                    ques = paginator.page(page)
+                except(EmptyPage, InvalidPage):
+                    ques = paginator.page(paginator.num_pages)
+                context = {
+                    'questions': questions,
+                    'ques': ques,
+                    'test': test,
+                }
+                return render(request, 'student/solving_test.html',context)
+
+
+
 def solving_test(request, test_id):
     if request.user.is_authenticated:
         if request.user.last_name == 'student':
@@ -289,7 +321,7 @@ def upload(request, hw_id):
                 done_homework = DoneHomework.objects.get(homework_id=hw_id, student_id=student.id)
                 imagehw = done_homework.imageshomework_set.create(photo=photo, name=photo.name)
                 return redirect('/')
-
+# 27cd9b99-d75b-4009-bee5-b7e690036dd1
 
 def delete_upload(request, file_name):
     if request.user.is_authenticated:
